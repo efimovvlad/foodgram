@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import F, Sum
+from django.db.models import Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -118,10 +118,6 @@ class UserViewSet(DjoserUserViewSet):
                     author, context={'request': request}
                 ).data, status=status.HTTP_201_CREATED
             )
-        #get_object_or_404(
-        #     Subscriptions, user=user, author=author
-        # ).delete()
-        # return Response(status=status.HTTP_204_NO_CONTENT)
         subscription = Subscriptions.objects.filter(
             user=user, author=author).first()
         if not subscription:
@@ -145,14 +141,13 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (DjangoFilterBackend,)
     permission_classes = (permissions.AllowAny,)
-    #filterset_fields = ('name',)
     filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для управления рецептами."""
 
-    queryset = Recipe.objects.all()  #.order_by('-pub_date')
+    queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
     pagination_class = PaginatorWithLimit
     permission_classes = (ReadOnlyOrAuthor,)
@@ -174,14 +169,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             reverse('api:shortlink', args=[recipe.pk])
         )
         return Response({"short-link": short_link}, status=status.HTTP_200_OK)
-        # return Response(
-        #     {
-        #         'short-link': request.build_absolute_uri(
-        #             reverse('recipes:shortlink', args=[recipe.pk])
-        #         )
-        #     },
-        #     status=status.HTTP_200_OK,
-        # )
 
     @action(
         detail=False, methods=('get',),
@@ -240,11 +227,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             raise ValidationError('Этот рецепт уже в списке.')
         subscription = model.objects.filter(user=user, recipe=recipe).first()
         if not subscription:
-            raise ValidationError('Вы не подписаны на этот рецепт.') #, code=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError('Вы не подписаны на этот рецепт.')
         subscription.delete()
-        #get_object_or_404(
-        #     model, user=request.user, recipe=recipe
-        # ).delete()
         return Response(
             {'delete': delete_message},
             status=status.HTTP_204_NO_CONTENT

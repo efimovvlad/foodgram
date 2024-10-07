@@ -11,7 +11,6 @@ from .constants import (
     MIN_INGREDIENT_AMOUNT,
 )
 
-
 User = get_user_model()
 
 
@@ -91,41 +90,12 @@ class RecipeIngredient(models.Model):
         default_related_name = 'recipe_ingredients'
         verbose_name = 'Продукт'
         verbose_name_plural = 'Продукты'
-        # ordering = ('recipe',)
         constraints = (
             models.UniqueConstraint(
                 fields=('recipe', 'ingredient',),
                 name='unique_recipe_ingredient',
             ),
         )
-
-
-# class UserRecipeBase(models.Model):
-#     """Базовая модель для связи пользователя и рецепта."""
-
-#     user = models.ForeignKey(
-#         User,
-#         on_delete=models.CASCADE,
-#         verbose_name='Пользователь',
-#     )
-#     recipe = models.ForeignKey(
-#         Recipe,
-#         on_delete=models.CASCADE,
-#         verbose_name='Рецепт',
-#     )
-
-#     class Meta:
-#         abstract = True
-#         # default_related_name = '%(class)ss'
-#         constraints = (
-#             models.UniqueConstraint(
-#                 fields=('user', 'recipe',),
-#                 name='unique_user_recipe'
-#             ),
-#         )
-
-#     def __str__(self):
-#         return f'{self.user.username} взаимодействует с {self.recipe.name}'
 
 
 class Favorite(models.Model):

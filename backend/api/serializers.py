@@ -42,16 +42,6 @@ class UserCreateSerializer(DjoserUserCreateSerializer):
 
     email = serializers.EmailField()
 
-    # class Meta:
-    #     model = User
-    #     fields = (
-    #         'email',
-    #         'username',
-    #         'first_name',
-    #         'last_name',
-    #         'password'
-    #     )
-
     class Meta(DjoserUserCreateSerializer.Meta):
         fields = (*DjoserUserCreateSerializer.Meta.fields,)
 
@@ -61,18 +51,6 @@ class UserSerializer(DjoserUserSerializer):
 
     is_subscribed = serializers.SerializerMethodField()
 
-    # class Meta:
-    #     model = User
-    #     fields = (
-    #         'email',
-    #         'id',
-    #         'username',
-    #         'first_name',
-    #         'last_name',
-    #         'is_subscribed',
-    #         'avatar'
-    #     )
-
     class Meta(DjoserUserSerializer.Meta):
         fields = (
             *DjoserUserSerializer.Meta.fields,
@@ -80,18 +58,8 @@ class UserSerializer(DjoserUserSerializer):
             'avatar'
         )
 
-    # def get_is_subscribed(self, user):
-    #     request = self.context.get('request')
-    #     return (
-    #         request and request.user.is_authenticated
-    #         and Subscriptions.objects.filter(
-    #             user=request.user, author=user
-    #         ).exists()
-    #     )
-
     def get_is_subscribed(self, user):
         request = self.context.get('request')
-        # if not request or not request.user.is_authenticated:
         if not request.user.is_authenticated:
             return False
         is_subscribed = Subscriptions.objects.filter(
@@ -118,7 +86,6 @@ class SubscriptionsSerializer(UserSerializer):
 
     class Meta(UserSerializer.Meta):
         model = User
-        # fields = UserSerializer.Meta.fields + ('recipes', 'recipes_count')
         fields = (
             *UserSerializer.Meta.fields,
             'recipes',
@@ -135,11 +102,6 @@ class SubscriptionsSerializer(UserSerializer):
             many=True,
             context=self.context
         ).data
-        # return ShortRecipeSerializer(
-        #     recipe.recipes.all()[:int(
-        #         self.context.get('request').GET.get('recipes_limit', 10**10)
-        #     )], many=True, context=self.context
-        # ).data
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -175,11 +137,6 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Количество ингредиента меньше минимально допустимого.'
             )
-        # if value < MIN_INGREDIENT_AMOUNT:
-        #     raise serializers.ValidationError(
-        #         f'Количество продукта ({value}) '
-        #         f'меньше минимально допустимого ({MIN_INGREDIENT_AMOUNT}).'
-        #     )
         return value
 
 
@@ -261,7 +218,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            #'id', ####
             'ingredients',
             'tags',
             'image',
@@ -274,14 +230,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return RecipeRetrieveSerializer(instance, context=self.context).data
 
-    # def validate_image(self, value):
-    #     """Проверяет, что поле изображение не пустое."""
-    #     if not value:
-    #         raise serializers.ValidationError(
-    #             'Поле не может быть пустым, загрузите файл.'
-    #         )
-    #     return value
-
     @staticmethod
     def validate_items(items, model, field_name):
         if not items:
@@ -293,12 +241,12 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         missing_items = set(items) - set(existing_items)
         if missing_items:
             raise serializers.ValidationError(
-                {field_name: f'Элемент(ы) с id {missing_items} не существует!'}
+                {field_name: f'Элемент(ы) с id {missing_items} не существует.'}
             )
         non_unique_ids = {item for item in items if items.count(item) > 1}
         if non_unique_ids:
             raise serializers.ValidationError(
-                {field_name: f'Элементы с id {non_unique_ids} не уникальны!'}
+                {field_name: f'Элементы с id {non_unique_ids} не уникальны.'}
             )
 
     def validate(self, data):
@@ -313,7 +261,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         self.validate_items(tags, Tag, 'tags')
         return data
 
-    # @staticmethod
+    #@staticmethod
     # def validate_items(items, model, field_name):
     #     if not items:
     #         raise serializers.ValidationError(
