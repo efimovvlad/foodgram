@@ -13,7 +13,7 @@ class Tag(models.Model):
         max_length=256,
         unique=True
     )
-    slug = models.CharField(
+    slug = models.SlugField(
         verbose_name='Слаг',
         max_length=50,
         unique=True
