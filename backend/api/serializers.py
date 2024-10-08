@@ -261,49 +261,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         self.validate_items(tags, Tag, 'tags')
         return data
 
-    #@staticmethod
-    # def validate_items(items, model, field_name):
-    #     if not items:
-    #         raise serializers.ValidationError(
-    #             {field_name: f'Поле {field_name} не может быть пустым.'}
-    #         )
-    #     existing_items = model.objects.filter(
-    #         id__in=items
-    #     ).values_list('id', flat=True)
-    #     missing_items = set(items) - set(existing_items)
-    #     if missing_items:
-    #         raise serializers.ValidationError(
-    #             {field_name: f'Элемент(ы) с id {missing_items} не существует!'}
-    #         )
-    #     non_unique_ids = set(
-    #         item for item in items if items.count(item) > 1
-    #     )
-    #     if non_unique_ids:
-    #         raise serializers.ValidationError(
-    #             {field_name: f'Элементы с id {non_unique_ids} не уникальны!'}
-    #         )
-
-    # def validate(self, data):
-    #     """Проверяет поля теги и ингредиенты."""
-    #     tags = self.initial_data.get('tags')
-    #     ingredients = self.initial_data.get('ingredients')
-    #     if not ingredients:
-    #         raise serializers.ValidationError(
-    #             'Поле "ingredients" не может быть пустым.'
-    #         )
-    #     ingredients_ids = [item['id'] for item in ingredients]
-    #     self.validate_items(
-    #         ingredients_ids,
-    #         model=Ingredient,
-    #         field_name='ingredients',
-    #     )
-    #     self.validate_items(
-    #         tags,
-    #         model=Tag,
-    #         field_name='tags',
-    #     )
-    #     return data
-
     def set_ingredients(self, recipe, ingredients):
         """Добавляет ингредиенты в промежуточную модель."""
         RecipeIngredient.objects.bulk_create(

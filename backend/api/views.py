@@ -83,7 +83,6 @@ class UserViewSet(DjoserUserViewSet):
     def subscriptions(self, request):
         subscriptions = User.objects.filter(authors__user=request.user)
         page = self.paginate_queryset(subscriptions)
-        #if page is not None:
         if page:
             serializer = SubscriptionsSerializer(
                 page, many=True, context={'request': request}
@@ -194,22 +193,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             filename='shopping_list.txt'
         )
         return response
-    #def download_shopping_cart(self, request):
-    #     """Возвращает список покупок в формате TXT."""
-    #     user = request.user
-    #     ingredients = Ingredient.objects.filter(
-    #         recipe_ingredients__recipe__shopping_cart__user=user
-    #     ).values('name', measurement=F('measurement_unit')).annotate(
-    #         amount=Sum('recipe_ingredients__amount')
-    #     )
-    #     return FileResponse(
-    #         generate_txt(
-    #             ingredients,
-    #             Recipe.objects.filter(shopping_cart__user=user)
-    #         ),
-    #         content_type='text/plain',
-    #         filename='shopping_list.txt'
-    #     )
 
     @staticmethod
     def shoppingcart_favorite_method(request, pk, model, delete_message):
