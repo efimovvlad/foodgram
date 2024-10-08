@@ -146,7 +146,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для управления рецептами."""
 
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.select_related(
+        'author').prefetch_related('ingredients', 'tags')
     filter_backends = (DjangoFilterBackend,)
     pagination_class = PaginatorWithLimit
     permission_classes = (ReadOnlyOrAuthor,)
