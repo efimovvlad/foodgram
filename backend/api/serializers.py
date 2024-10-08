@@ -9,7 +9,6 @@ from djoser.serializers import (
     UserSerializer as DjoserUserSerializer
 )
 
-from recipes.constants import MIN_INGREDIENT_AMOUNT
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import Subscriptions
 
@@ -133,7 +132,7 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount')
 
     def validate_amount(self, value):
-        if value < MIN_INGREDIENT_AMOUNT:
+        if value < 1:
             raise serializers.ValidationError(
                 'Количество ингредиента меньше минимально допустимого.'
             )

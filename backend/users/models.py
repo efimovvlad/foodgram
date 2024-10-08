@@ -1,11 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-from .constants import (
-    MAX_LENGTH_USERNAME,
-    MAX_LENGTH_FIRST_NAME,
-    MAX_LENGTH_LAST_NAME
-)
 from .validators import validate_username
 
 
@@ -13,14 +8,25 @@ class User(AbstractUser):
     """Модель пользователя."""
 
     username = models.CharField(
+        verbose_name='Имя пользователя',
         unique=True,
-        max_length=MAX_LENGTH_USERNAME,
+        max_length=150,
         validators=(validate_username,)
     )
-    email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=MAX_LENGTH_FIRST_NAME)
-    last_name = models.CharField(max_length=MAX_LENGTH_LAST_NAME)
+    email = models.EmailField(
+        verbose_name='Электронная почта',
+        unique=True
+    )
+    first_name = models.CharField(
+        verbose_name='Имя',
+        max_length=150
+    )
+    last_name = models.CharField(
+        verbose_name='Фамилия',
+        max_length=150
+    )
     avatar = models.ImageField(
+        verbose_name='Аватар',
         upload_to='users_avatars/',
         blank=True,
         null=True
@@ -42,11 +48,13 @@ class Subscriptions(models.Model):
 
     author = models.ForeignKey(
         User,
+        verbose_name='Автор рецепта',
         related_name='authors',
         on_delete=models.CASCADE
     )
     user = models.ForeignKey(
         User,
+        verbose_name='Подписчик',
         related_name='followers',
         on_delete=models.CASCADE
     )
@@ -60,3 +68,6 @@ class Subscriptions(models.Model):
                 name='unique_subscription'
             ),
         )
+
+    def __str__(self):
+        return f'{self.user.username} подписан на {self.author.username}'
