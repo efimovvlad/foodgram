@@ -83,14 +83,13 @@ class UserViewSet(DjoserUserViewSet):
     def subscriptions(self, request):
         subscriptions = User.objects.filter(authors__user=request.user)
         page = self.paginate_queryset(subscriptions)
-        if page:
-            serializer = SubscriptionsSerializer(
-                page, many=True, context={'request': request}
-            )
-            return self.get_paginated_response(serializer.data)
         serializer = SubscriptionsSerializer(
-            subscriptions, many=True, context={'request': request}
+            page if page else subscriptions,
+            many=True,
+            context={'request': request}
         )
+        if page:
+            return self.get_paginated_response(serializer.data)
         return Response(serializer.data)
 
     @action(
@@ -147,7 +146,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для управления рецептами."""
 
     queryset = Recipe.objects.select_related(
-        'author').prefetch_related('ingredients', 'tags')
+        'author').prefetch_related('recipe_ingredients', 'tags')
     filter_backends = (DjangoFilterBackend,)
     pagination_class = PaginatorWithLimit
     permission_classes = (ReadOnlyOrAuthor,)
