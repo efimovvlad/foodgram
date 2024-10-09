@@ -31,7 +31,9 @@ class RecipeAdmin(admin.ModelAdmin):
     readonly_fields = ('favorite_count',)
 
     def image_tag(self, obj):
-        return format_html('<img src="{}" />'.format(obj.image.url))
+        return format_html(
+            '<img src="{}" width="100" height="100"/>'.format(obj.image.url)
+        )
 
     image_tag.short_description = 'Изображение'
 

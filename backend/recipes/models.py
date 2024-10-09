@@ -51,7 +51,7 @@ class Ingredient(models.Model):
         )
 
     def __str__(self):
-        return self.name
+        return f'{self.name} {self.measurement_unit} '
 
 
 class Recipe(models.Model):
