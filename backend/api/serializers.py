@@ -9,7 +9,14 @@ from djoser.serializers import (
     UserSerializer as DjoserUserSerializer
 )
 
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    Tag
+)
 from users.models import Subscriptions
 
 User = get_user_model()
@@ -75,6 +82,50 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
+class FavoriteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Favorite
+        fields = ('recipe',)
+
+    def validate(self, data):
+        recipe = data.get('recipe')
+        user = self.context.get('request').user
+        if Favorite.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError(
+                'Этот рецепт уже в избранном.'
+            )
+        data['user'] = user
+        return data
+
+    def to_representation(self, instance):
+        return ShortRecipeSerializer(
+            instance.recipe, context=self.context
+        ).data
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('recipe',)
+
+    def validate(self, data):
+        recipe = data.get('recipe')
+        user = self.context.get('request').user
+        if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError(
+                'Этот рецепт уже в списке.'
+            )
+        data['user'] = user
+        return data
+
+    def to_representation(self, instance):
+        return ShortRecipeSerializer(
+            instance.recipe, context=self.context
+        ).data
+
+
 class SubscriptionsSerializer(UserSerializer):
     """Сериализатор для подписок."""
 
@@ -100,6 +151,37 @@ class SubscriptionsSerializer(UserSerializer):
             recipes,
             many=True,
             context=self.context
+        ).data
+
+
+class SubscribeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscriptions
+        fields = ('user', 'author')
+
+    def validate(self, data):
+        user = data.get('user')
+        author = data.get('author')
+        if user == author:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя'
+            )
+        if Subscriptions.objects.filter(
+            user=user,
+            author=author
+        ).exists():
+            raise serializers.ValidationError(
+                'Вы уже подписаны на этого пользователя.'
+            )
+        return data
+
+    def to_representation(self, instance):
+        return SubscriptionsSerializer(
+            instance.author,
+            context={
+                'request': self.context.get('request')
+            }
         ).data
 
 

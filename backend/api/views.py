@@ -26,10 +26,12 @@ from .paginators import PaginatorWithLimit
 from .permissions import ReadOnlyOrAuthor
 from .serializers import (
     AvatarSerializer,
+    FavoriteSerializer,
     IngredientSerializer,
     RecipeCreateUpdateSerializer,
     RecipeRetrieveSerializer,
-    ShortRecipeSerializer,
+    ShoppingCartSerializer,
+    SubscribeSerializer,
     SubscriptionsSerializer,
     TagSerializer,
     UserCreateSerializer,
@@ -101,20 +103,20 @@ class UserViewSet(DjoserUserViewSet):
     def subscribe(self, request, id=None):
         author = get_object_or_404(User, pk=id)
         user = request.user
-        if user == author:
-            raise ValidationError('Нельзя подписаться на самого себя.')
+        data = {
+            'user': user.pk,
+            'author': author.pk,
+        }
         if request.method == 'POST':
-            _, created = Subscriptions.objects.get_or_create(
-                user=user, author=author
+            serializer = SubscribeSerializer(
+                data=data,
+                context={'request': request},
             )
-            if not created:
-                raise ValidationError(
-                    'Вы уже подписаны на этого пользователя.'
-                )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(
-                SubscriptionsSerializer(
-                    author, context={'request': request}
-                ).data, status=status.HTTP_201_CREATED
+                serializer.data,
+                status=status.HTTP_201_CREATED
             )
         subscription = Subscriptions.objects.filter(
             user=user, author=author).first()
@@ -195,27 +197,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
     @staticmethod
-    def shoppingcart_favorite_method(request, pk, model, delete_message):
+    def shoppingcart_favorite_method(request, pk, model, serializer):
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
+        data = {'recipe': recipe.id}
         if request.method == 'POST':
-            _, created = model.objects.get_or_create(
-                user=user, recipe=recipe
+            serializer = serializer(
+                data=data, context={'request': request}
             )
-            if created:
-                return Response(
-                    ShortRecipeSerializer(recipe).data,
-                    status=status.HTTP_201_CREATED
-                )
-            raise ValidationError('Этот рецепт уже в списке.')
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         subscription = model.objects.filter(user=user, recipe=recipe).first()
         if not subscription:
             raise ValidationError('Вы не подписаны на этот рецепт.')
         subscription.delete()
-        return Response(
-            {'delete': delete_message},
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
@@ -226,7 +223,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         return self.shoppingcart_favorite_method(
             request, pk, Favorite,
-            delete_message='Рецепт удален из избранного'
+            FavoriteSerializer
         )
 
     @action(
@@ -238,7 +235,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         return self.shoppingcart_favorite_method(
             request, pk, ShoppingCart,
-            delete_message='Рецепт удален из списка покупок'
+            ShoppingCartSerializer
         )
 
 
