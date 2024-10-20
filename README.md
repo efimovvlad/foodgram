@@ -2,6 +2,7 @@
 <img src="https://github.com/blackcater/blackcater/raw/main/images/Hi.gif" height="32"/></h1>
 <h3 align="center">Начинающий Python Developer</h3>
 <h3 align="center">Foodgram - онлайн-сервис для публикации кулинарных рецептов.</h3>
+
 ## Пример сайта находится по [адресу](https://efimovvlat.com)
  
 ## Описание
