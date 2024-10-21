@@ -23,12 +23,18 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class IngredientInline(admin.TabularInline):
+    model = Recipe.ingredients.through
+    extra = 1
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author', 'favorite_count', 'image_tag')
     search_fields = ('author', 'name')
     list_filter = ('tags',)
     readonly_fields = ('favorite_count',)
+    inlines = [IngredientInline]
 
     def image_tag(self, obj):
         return format_html(
